@@ -5,10 +5,24 @@
 #include <vector>
 #include <bits/stdc++.h>
 #include <filesystem>
-
+namespace fsystem = std::filesystem;
 using std::vector;
 
 using namespace std;
+
+
+
+int find_files()
+{
+    std::string path("data/");
+    std::string ext(".txt");
+    for (auto &p : fsystem::recursive_directory_iterator(path))
+    {
+        if (p.path().extension() == ext)
+            std::cout << p.path().stem().string() << '\n';
+    }
+    return 0;
+}
 
 
 class EncryptDecrypt {
@@ -127,7 +141,6 @@ int main() {
     map <string, string> mapOfPasswords;
     vector <string> sorted_passwords;
     EncryptDecrypt encrypt_decrypt;
-    namespace fs = filesystem;
     //vector<string> words;
     int size_t, pos;
     size_t, pos = 0;
@@ -138,7 +151,7 @@ int main() {
     //mapOfLoginAndPassword["www.zopa.com"] = log_and_pass;
 
 
-    string path = "my_file.txt";//путь
+    string path = "data/sport.txt";//путь
     ofstream fs;//обьект класа для ззаписи
 
     fs.exceptions(ifstream::badbit | ifstream::failbit);//для трай кетч
@@ -147,7 +160,7 @@ int main() {
         fs.open(path, ofstream::app );//открітие или создание файла
         cout << "File is open" << endl;
         // fs << "bebra\n"<<endl;//запись в файл
-        
+
     }
     catch(const ifstream::failure & ex){
         cout << ex.what() << endl;
@@ -176,7 +189,7 @@ int main() {
     string sitename;
     string data;
     cout << "Press 1 for writing a new password:" << endl;
-    cout << "Press2 for show password" << endl;
+    cout << "Press 2 for show password" << endl;
     cout << "Press2 3 for sorting of passwords" << endl;
     cin >> number;
 
@@ -185,6 +198,7 @@ int main() {
     switch (number)
     {
         case 1:
+            find_files();
             cout << "Enter class for you password" << endl;
             cin >> className;
             cout << "Enter site adress" << endl;
@@ -315,6 +329,6 @@ int main()
 
     // Function Call
     sort(M);
-    return 0;
+    return 0;ssss
 }
- */
+fdfdfd */
