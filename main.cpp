@@ -5,10 +5,95 @@
 #include <vector>
 #include <bits/stdc++.h>
 #include <filesystem>
+#include <sstream>
+#include <stdio.h>
 namespace fsystem = std::filesystem;
 using std::vector;
 
 using namespace std;
+
+
+// CPP program for encoding the string
+// using classical cipher
+#include <iostream>
+#include <fstream>
+#include<string>
+#include <map>
+#include <vector>
+
+#include<string>
+using namespace std;
+
+
+
+
+class EncryptDecryptByKey {
+
+public:
+    string encrypt(string message) {
+        char ch;
+        int i;
+        int key = 3;
+        for (i = 0; message[i] != '\0'; ++i) {
+            ch = message[i];
+            if (ch >= 'a' && ch <= 'z') {
+                ch = ch + key;
+                if (ch > 'z') {
+                    ch = ch - 'z' + 'a' - 1;
+                }
+                message[i] = ch;
+            } else if (ch >= 'A' && ch <= 'Z') {
+                ch = ch + key;
+                if (ch > 'Z') {
+                    ch = ch - 'Z' + 'A' - 1;
+                }
+                message[i] = ch;
+            }
+        }
+        return message;
+    }
+
+public:
+    string decrypt(string message) {
+        //char message[100], ch;
+        char ch;
+        int i;
+        int key = 3;
+
+
+        for (i = 0; message[i] != '\0'; ++i) {
+            ch = message[i];
+            if (ch >= 'a' && ch <= 'z') {
+                ch = ch - key;
+                if (ch < 'a') {
+                    ch = ch + 'z' - 'a' + 1;
+                }
+                message[i] = ch;
+            } else if (ch >= 'A' && ch <= 'Z') {
+                ch = ch - key;
+                if (ch > 'a') {
+                    ch = ch + 'Z' - 'A' + 1;
+                }
+                message[i] = ch;
+            }
+        }
+
+        return message;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class EncryptDecrypt {
 public:
@@ -33,8 +118,10 @@ public:
     ifstream fin;
     map<string, vector<string>> mapOfLoginAndPassword;
     EncryptDecrypt encrypt_decrypt;
+    EncryptDecryptByKey en_by_key;
     map<string, string> mapOfPasswords;
     vector<string> sorted_passwords;
+    int current_key = 3;
 
 public:
     void open_file(string path) {
@@ -70,29 +157,36 @@ public:
         }
     };
 public:
-    int find_files() {
+    vector<string> find_files() {
+        vector <string> files;
         std::string path("data/");
         std::string ext(".txt");
+
         for (auto &p: fsystem::recursive_directory_iterator(path)) {
             if (p.path().extension() == ext)
-                cout << p.path().stem().string() << '\n';
+                files.push_back(p.path().stem().string());
+
 
         }
-        return 0;
+        return files;
     };
 
 
 public:
-    void fill_map_with_data() {
-
+    void fill_map_with_data(int key) {
 
         while (!fin.eof()) {
             vector<string> words;
             string text = " ";
             getline(fin, text);
+            if (current_key != key){
 
-            text = encrypt_decrypt.decrypt(text);
+            text = en_by_key.decrypt(text);
             words = split(text, "|");
+            }
+            else
+                text = en_by_key.decrypt(encrypt_decrypt.decrypt(text));
+                words = split(text, "|");
 
             //cout <<words.at(0)<<endl<<words.at(1)<<endl<<words.at(2)<<endl<<words.at(3)<<endl;
             mapOfLoginAndPassword[words[0]] = slicing(words, 1, 3);
@@ -103,7 +197,7 @@ public:
 
 public:
      void show(string str) {
-        //cout << str << " ";
+        cout << str << " " << endl;
         cout << mapOfLoginAndPassword[str][0] << endl;
         cout << mapOfLoginAndPassword[str][1] << endl;
         cout << mapOfLoginAndPassword[str][2] << endl;
@@ -192,12 +286,12 @@ public:
     void update_file(){
         int count = 0;
         string data;
-        fs.close();
+        //fs.close();
         ofstream tmp;
         tmp.open("data/tmp.txt", ofstream::app);//открітие или создание файла
         for (auto const &x: mapOfLoginAndPassword)
         {
-            data = encrypt_decrypt.encrypt(x.first + "|" + x.second[0] + "|" + x.second[1] + "|" + x.second[2]);
+            data = encrypt_decrypt.encrypt(en_by_key.encrypt(x.first + "|" + x.second[0] + "|" + x.second[1] + "|" + x.second[2]));
             if (count <= 0){
             tmp << data;
             count++;
@@ -217,28 +311,6 @@ public:
         cout << "The password updated!)" << endl;
     };
 
-public:
-    void del_line(const char *file_name, int n)
-    {
-        ifstream fin(file_name);
-        ofstream fout;
-        fout.open("temp.txt", ios::out);
-
-        char ch;
-        int line = 1;
-        while(fin.get(ch))
-        {
-            if(ch == '\n')
-                line++;
-
-            if(line != n)      // content not to be deleted
-                fout<<ch;
-        }
-        fout.close();
-        fin.close();
-        remove(file_name);
-        rename("temp.txt", file_name);
-    }
 };
 
 
@@ -296,7 +368,16 @@ int main() {
     map<string, string> mapOfPasswords;
     vector<string> sorted_passwords;
     EncryptDecrypt encrypt_decrypt;
+    EncryptDecryptByKey ed_by_key;
     FileManadger fm;
+    string category;
+    // Hold the Keyword
+    int current_key = 3;
+    int key;
+    string key_string;
+    cout << "Enter key for dectypt files\n";
+    cin >> key_string;
+    key = key_string.length();
 
     //vector<string> words;
     //2vector<string> log_and_pass = {"hohol", "12345"};
@@ -317,33 +398,54 @@ int main() {
     string youAdress, text;
     string sitename;
     string data;
+    int number_for_additing_chose;
     int count = 0;
+
+    vector <string> files;
+    int count_files;
+    map<int, string> dict_of_categories;
+    int category_num;
+    //string category_to_removing;
+    ofstream fstmp;
+
+
 
     while (true) {
             cout << "Press 1 for writing a new password:\n" << endl;
             cout << "Press 2 for show password by his site:\n" << endl;
             cout << "Press 3 for sorting of passwords:\n" << endl;
-            cout << "Press 4 for deleting of data:\n" << endl;
-            cout << "Press 5 for editing of password:\n" << endl;
+            cout << "Press 4 for editing of data:\n" << endl;
+            cout << "Press 5 for removing of password:\n" << endl;
+            cout << "Press 6 for create/remove category:\n" << endl;
+            cout << "Press 7 for show data by category:\n" << endl;
             cin >> number;
-        
-        
+
+
+
             switch (number) {
                 case 1:
-                    fm.find_files();
-                    cout << "Enter site adress" << endl;
+                    cout << "Chose category: " << endl;
+                    files = fm.find_files();
+                    for (auto & element : files) {
+                        cout << count_files << ": " <<  element << endl;
+                        dict_of_categories[count_files] = element;
+                        count_files++;
+                    }
+                    cin >> category_num;
+
+                    cout << "Enter site address" << endl;
                     cin >> className;
-                    cout << "Enter login" << endl;
+                    cout << "Enter your login" << endl;
                     cin >> youAdress;
                     cout << "Enter your password" << endl;
                     cin >> firstPass;
                     cout << "Confirm your password " << endl;
                     cin >> lastPass;
                     if (firstPass == lastPass) {
-        
+
                         time_t result = time(nullptr);
-                        data = encrypt_decrypt.encrypt(
-                                className + "|" + youAdress + "|" + firstPass + "|" + asctime(localtime(&result)));
+                        data = encrypt_decrypt.encrypt(ed_by_key.encrypt(
+                                className + "|" + youAdress + "|" + firstPass + "|" + asctime(localtime(&result))));
                         if (count <= 0) {
                             fm.fs << data;
                             count++;
@@ -352,32 +454,47 @@ int main() {
                         }
                         cout << "Add new password!)" << endl;
                     } else cout << "Don't add new password!)" << endl;
-        
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
                     continue;
                 case 2:
                     cout << "Enter site for which you want know login and password" << endl;
                     cin >> sitename;
-        
-        
-                    fm.fill_map_with_data();
-        
-        
+
+
+                    fm.fill_map_with_data(key);
+
+
                     fm.show(sitename);
-        
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
                     continue;
                 case 3:
-                    fm.fill_map_with_data();
-        
-        
+                    fm.fill_map_with_data(key);
+
+
                     fm.sorting();
-        
-        
+
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
                     continue;
                 case 4:
-        
+
                     cout << "Enter site for which you want change the password" << endl;
                     cin >> sitename;
-                    fm.fill_map_with_data();
+                    fm.fill_map_with_data(key);
                     cout << "the old values:\n";
                     fm.show(sitename);
                     cout << "Enter your password" << endl;
@@ -385,31 +502,100 @@ int main() {
                     cout << "Confirm your password " << endl;
                     cin >> lastPass;
                     if (firstPass == lastPass) {
-        
+
                         fm.mapOfLoginAndPassword[sitename][1] = firstPass;
                         time_t result = time(nullptr);
                         fm.mapOfLoginAndPassword[sitename][2] = asctime(localtime(&result));
                         cout << "the new values:\n";
                         fm.show(sitename);
-        
+
                         fm.update_file();
-        
+
                     } else
                         cout << "Password dosn't added\n";
-        
+
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
                     continue;
+
                 case 5:
                     cout << "Enter your site for which you want to delate password" << endl;
                     cin >> sitename;
-        
-                    fm.fill_map_with_data();
-        
+
+                    fm.fill_map_with_data(key);
+
                     fm.mapOfLoginAndPassword.erase(sitename);
                     fm.update_file();
                     cout << "Succes!!!";
-        
-        
-                default:
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
+                    continue;
+                case 6:
+
+
+                    count_files = 0;
+                    cout << "Create/Delete category:" << endl;
+                    cout << "Chose option for category:" << endl;
+                    cout << "Enter 1 for creating category:" << endl;
+                    cout << "Enter 0 for delating category:" << endl;
+
+                    cin >> number;
+                    if (number == 0){
+
+                        cout << "Enter category which you want removing:" << endl;
+                        files = fm.find_files();
+                        for (auto & element : files) {
+                           cout << count_files << ": " <<  element << endl;
+                           dict_of_categories[count_files] = element;
+                           count_files++;
+                        }
+                        cin >> category_num;
+                        //string category_to_removing;
+
+                        string tmp = "data/" + dict_of_categories[category_num] + ".txt";
+
+                        //cout << category_to_removing;
+                        remove(tmp.c_str());
+
+                       // rename("temp.txt", file_name);
+                       break;
+                    }
+                   else
+                        cout << "Enter name of new category:" << endl;
+                        cin >> sitename;
+                        fstmp.open("data/" + sitename + ".txt", ofstream::app);//открітие или создание файла
+                        fstmp.close();
+                    //fm.show()
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
+                    continue;
+                case 7:
+                    fm.fill_map_with_data(key);
+                    for (auto const &x: fm.mapOfLoginAndPassword) {
+                        fm.show(x.first);
+                    }
+
+
+                    cout << "If you want continue press 1" << endl;
+                    cout << "if not, press 0";
+                    cin >> number_for_additing_chose;
+                    if (number_for_additing_chose == 0){
+                        break;
+                    }
+                    continue;
+               default:
                     break;
     }
 
@@ -419,6 +605,28 @@ int main() {
             return 0;
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void bubbleSort(int arr[], int n) {
