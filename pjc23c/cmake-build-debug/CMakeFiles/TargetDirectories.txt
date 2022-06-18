@@ -1,0 +1,3 @@
+/home/bonart/CLionProjects/ppj23c/cmake-build-debug/CMakeFiles/ppj23c.dir
+/home/bonart/CLionProjects/ppj23c/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bonart/CLionProjects/ppj23c/cmake-build-debug/CMakeFiles/rebuild_cache.dir
